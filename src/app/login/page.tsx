@@ -1,16 +1,42 @@
 "use client";
 import Link from "next/link";
 import axios from "axios";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import toast from "react-hot-toast";
 
 export default function LoginPage() {
+  const router = useRouter();
   const [user, setUser] = useState({
     email: "",
     password: "",
   });
 
-  const onLogin = () => {};
+  const [buttonDisabled, setButtonDisabled] = useState(true);
+
+  useEffect(() => {
+    if (user.email.trim().length > 0 && user.password.trim().length >= 8) {
+      setButtonDisabled(false);
+    } else {
+      setButtonDisabled(true);
+    }
+  }, [user]);
+
+  const onLogin = async (e: any) => {
+    e.preventDefault();
+
+    try {
+      await toast.promise(axios.post("/api/users/login", user), {
+        loading: "Logging in...",
+        success: (res) => res.data.message,
+        error: (err: any) =>
+          err.response?.data?.error || "Something went wrong!",
+      });
+      router.push("/profile");
+    } catch (error: any) {
+      console.error("Login Failed", error.message);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-black flex items-center justify-center px-4">
@@ -21,7 +47,7 @@ export default function LoginPage() {
 
         <p className="mt-2 text-center text-zinc-400">Login to continue</p>
 
-        <form className="mt-8 space-y-5">
+        <form onSubmit={onLogin} className="mt-8 space-y-5">
           <div>
             <label
               htmlFor="email"
@@ -59,9 +85,9 @@ export default function LoginPage() {
           </div>
 
           <button
-            onClick={onLogin}
             type="submit"
-            className="w-full rounded-lg bg-white py-3 font-semibold text-black transition hover:bg-zinc-200 cursor-pointer"
+            disabled={buttonDisabled}
+            className="w-full rounded-lg bg-white py-3 font-semibold text-black transition hover:bg-zinc-200 cursor-pointer disabled:bg-zinc-700 disabled:text-zinc-400 disabled:cursor-not-allowed"
           >
             Login
           </button>
