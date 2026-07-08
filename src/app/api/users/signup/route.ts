@@ -2,6 +2,9 @@ import { connectDb } from "@/database/dbConfig";
 import User from "@/models/userSchema";
 import { NextResponse, NextRequest } from "next/server";
 import bcrypt from "bcrypt";
+import generateRandomToken from "@/helpers/generateRandomToken";
+import sendEmail from "@/helpers/mailer";
+import emailVerificationMailgenContent from "@/templates/emailVerificationMailgenTemplate";
 
 export async function POST(request: NextRequest) {
   try {
@@ -9,9 +12,12 @@ export async function POST(request: NextRequest) {
     const reqBody = await request.json();
     const { username, email, password } = reqBody;
 
+    const normalisedEmail = email.trim().toLowerCase();
+    const normalisedUsername = username.trim();
+
     if (
-      username.trim().length == 0 ||
-      email.trim().length == 0 ||
+      normalisedUsername.length == 0 ||
+      normalisedEmail.length == 0 ||
       password.trim().length == 0
     ) {
       return NextResponse.json(
@@ -29,8 +35,8 @@ export async function POST(request: NextRequest) {
 
     const user = await User.findOne({
       $or: [
-        { username: username.trim() },
-        { email: email.toLowerCase().trim() },
+        { username: normalisedUsername },
+        { email: normalisedEmail },
       ],
     });
 
@@ -43,19 +49,34 @@ export async function POST(request: NextRequest) {
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
+    const { unhashedToken, hashedToken, expiresAt } = generateRandomToken(20);
+
     const newUser = new User({
-      username,
-      email,
+      username: normalisedUsername,
+      email: normalisedEmail,
       password: hashedPassword,
+      emailVerificationToken: hashedToken,
+      emailVerificationTokenExpiry: expiresAt,
     });
 
     await newUser.save();
 
+    await sendEmail({
+      email: normalisedEmail,
+      subject: "Please verify your email",
+      mailgenContent: emailVerificationMailgenContent(
+        `${process.env.PUBLIC_APP_URL}/verify-email/${unhashedToken}`,
+        normalisedUsername
+
+      )
+    })
+
     return NextResponse.json(
-      { message: "User created successfully", success: true },
       {
-        status: 201,
-      },
+        message: "User created successfully",
+      }, {
+      status: 201,
+    },
     );
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });

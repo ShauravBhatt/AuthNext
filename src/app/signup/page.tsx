@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import axios from "axios";
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 
@@ -28,23 +28,26 @@ export default function SignupPage() {
     }
   }, [user]);
 
-  const onSignUp = async (e:any) => {
+  const onSignUp = async (e: any) => {
     e.preventDefault();
 
     try {
       await toast.promise(axios.post("/api/users/signup", user), {
         loading: "Creating your account...",
-        success: "Account created successfully!",
+        success: (res) => res.data?.message,
         error: (err: any) =>
           err.response?.data?.error || "Something went wrong!",
       });
 
-      router.push("/login");
-    } catch (error) {
-      // Already handled by toast.promise
+      setTimeout(() => {
+            toast.success("Check your inbox for email verification.")
+            router.push("/login");
+      }, 1500);
+
+    } catch (error: any) {
+      console.error(error.message);
     }
   };
-
   return (
     <div className="min-h-screen bg-black flex items-center justify-center px-4">
       <div className="w-full max-w-md rounded-2xl border border-zinc-800 bg-zinc-950 p-8 shadow-2xl">
