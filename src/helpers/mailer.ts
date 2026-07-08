@@ -41,7 +41,7 @@ export default async function sendEmail(options) {
   try {
     await transporter.sendMail(mail);
     console.log("Mail delivered successfully !!");
-  } catch (error) {
+  } catch (error: any) {
     console.error(error.message);
     throw new Error("Can't delivered the mail check mailtrap credentials. ");
   }
