@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
-import { NextResponse } from "next/server";
 
 export default function ProfilePage() {
   const router = useRouter();
