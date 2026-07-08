@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import axios from "axios";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
@@ -14,9 +14,28 @@ export default function ProfilePage() {
     isVerified: false,
   });
 
-  //   useEffect(() => {
-  //     // Later we'll fetch the user here
-  //   }, []);
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const response = await toast.promise(
+          axios.get("/api/users/me"),
+          {
+            loading: "Fetching user data",
+            success: (res) =>
+              res.data?.message || "User fetched successfully",
+            error: (err: any) =>
+              err.response?.data?.error || "Failed to fetch user data",
+          }
+        );
+
+        setUser(response.data.data);
+      } catch (error: any) {
+        console.error(error.message);
+      }
+    };
+
+    fetchUser();
+  }, []);
 
   const onLogout = async () => {
     try {
