@@ -20,7 +20,7 @@ export default function LoginPage() {
     } else {
       setButtonDisabled(true);
     }
-  }, [user]);
+  },[user]);
 
   const onLogin = async (e: any) => {
     e.preventDefault();
@@ -32,7 +32,11 @@ export default function LoginPage() {
         error: (err: any) =>
           err.response?.data?.error || "Something went wrong!",
       });
-      router.push("/profile");
+
+      setTimeout(() => {
+        router.push("/profile");
+      },1500);
+    
     } catch (error: any) {
       console.error("Login Failed", error.message);
     }

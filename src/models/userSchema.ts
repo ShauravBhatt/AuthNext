@@ -43,6 +43,14 @@ const userSchema = new Schema(
     emailVerificationTokenExpiry: {
       type: Date,
     },
+    changePasswordAttempts: {
+      type: Number,
+      default: 0,
+    },
+    changePasswordLockedUntil: {
+      type: Date,
+      default: null
+    }
   },
   {
     timestamps: true,

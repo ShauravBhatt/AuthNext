@@ -50,6 +50,10 @@ export default function ProfilePage() {
     }
   };
 
+  const changePassword = async () => {
+    router.push("/change-password");
+  }
+
   return (
     <div className="min-h-screen bg-black flex items-center justify-center px-4">
       <div className="w-full max-w-xl rounded-2xl border border-zinc-800 bg-zinc-950 p-8 shadow-2xl">
@@ -97,8 +101,10 @@ export default function ProfilePage() {
 
         {/* Buttons */}
         <div className="mt-10 flex gap-4">
-          <button className="flex-1 rounded-lg bg-white py-3 font-semibold text-black transition hover:bg-zinc-200">
-            Edit Profile
+          <button
+            onClick={changePassword}
+            className="flex-1 rounded-lg bg-white py-3 font-semibold text-black transition hover:bg-zinc-200">
+            Change Password
           </button>
 
           <button

@@ -12,7 +12,7 @@ export async function POST(request: NextRequest) {
 
     const identifier = email.toLowerCase().trim();
     const user = await User.findOne({
-      $or: [{ email: identifier }, { username: identifier }],
+      $or: [{ email: identifier }],
     });
 
     if (!user) {
