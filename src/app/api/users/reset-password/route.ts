@@ -23,7 +23,7 @@ export async function POST(request: NextRequest) {
   try {
     await connectDb();
 
-    const user = await User.findOneAndUpdate(
+  const user = await User.findOneAndUpdate(
       {
         forgotPasswordToken: hashedToken,
         forgotPasswordTokenExpiry: {
@@ -32,7 +32,9 @@ export async function POST(request: NextRequest) {
       },
       {
         $set: {
-          password: securePassword
+          password: securePassword,
+          loginAttempts: 0,
+          loginLockedUntil: null,
         },
         $unset: {
           forgotPasswordToken: "",

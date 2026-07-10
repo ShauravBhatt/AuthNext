@@ -42,7 +42,7 @@ export default function SignupPage() {
       setTimeout(() => {
             toast.success("Check your inbox for email verification.")
             router.push("/login");
-      }, 1500);
+      }, 2000);
 
     } catch (error: any) {
       console.error(error.message);

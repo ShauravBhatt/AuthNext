@@ -50,7 +50,16 @@ const userSchema = new Schema(
     changePasswordLockedUntil: {
       type: Date,
       default: null
-    }
+    },
+    loginAttempts: {
+      type: Number,
+      default: 0,
+    },
+
+    loginLockedUntil: {
+      type: Date,
+      default: null,
+    },
   },
   {
     timestamps: true,

@@ -10,20 +10,76 @@ export async function POST(request: NextRequest) {
     const reqBody = await request.json();
     const { email, password } = reqBody;
 
+    if (!email) {
+      return NextResponse.json({ message: "Email is missing", success: false }, { status: 400 });
+    }
+
+    if (!password) {
+      return NextResponse.json({ message: "Password is missing", success: false }, { status: 400 });
+    }
+
     const identifier = email.toLowerCase().trim();
-    const user = await User.findOne({
-      $or: [{ email: identifier }],
-    });
+    const user = await User.findOne({ email: identifier });
 
     if (!user) {
-      return NextResponse.json({ error: "User not found" }, { status: 404 });
+      return NextResponse.json({ error: "Invalid email or password" }, { status: 404 });
+    }
+
+    if (user.loginLockedUntil && (Date.now() < user.loginLockedUntil.getTime())) {
+      return NextResponse.json(
+        {
+          success: false,
+          locked: true,
+          lockedUntil: user.loginLockedUntil,
+          message:
+            "Too many failed attempts. Please try again after 5 minutes or use Forgot Password.",
+        },
+        { status: 429 }
+      )
     }
 
     const validPassword = await bcrypt.compare(password, user.password);
 
     if (!validPassword) {
-      return NextResponse.json({ error: "Invalid password" }, { status: 400 });
+      user.loginAttempts += 1;
+
+      if (user.loginAttempts >= 3) {
+        user.loginLockedUntil = new Date(Date.now() + 5 * 60 * 1000);
+
+        user.loginAttempts = 0;
+
+        await user.save();
+
+        return NextResponse.json(
+          {
+            success: false,
+            locked: true,
+            lockedUntil: user.loginLockedUntil,
+            message:
+              "Too many failed attempts. Please try again after 5 minutes or use Forgot Password.",
+          },
+          { status: 429 }
+        );
+      }
+
+      await user.save();
+
+      return NextResponse.json(
+        {
+          success: false,
+          locked: false,
+          attemptsLeft: 3 - user.loginAttempts,
+          message: `Current password is incorrect. ${3 - user.loginAttempts} attempt(s) remaining.`,
+        },
+        { status: 400 }
+
+      )
     }
+
+    user.loginAttempts = 0;
+    user.loginLockedUntil = null;
+
+    user.save();
 
     const token = jwt.sign(
       {
@@ -37,7 +93,7 @@ export async function POST(request: NextRequest) {
     );
 
     const response = NextResponse.json({
-      message: "Login Successfull",
+      message: "Login Successful",
       success: true,
     });
 

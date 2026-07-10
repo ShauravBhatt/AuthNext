@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import axios from "axios";
-import React, { useEffect, useState } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 
@@ -12,15 +12,11 @@ export default function LoginPage() {
     password: "",
   });
 
-  const [buttonDisabled, setButtonDisabled] = useState(true);
+  const [isLocked, setIsLocked] = useState(false);
 
-  useEffect(() => {
-    if (user.email.trim().length > 0 && user.password.trim().length >= 8) {
-      setButtonDisabled(false);
-    } else {
-      setButtonDisabled(true);
-    }
-  },[user]);
+  const buttonDisabled =
+    user.email.trim().length === 0 ||
+    user.password.trim().length < 8;
 
   const onLogin = async (e: any) => {
     e.preventDefault();
@@ -30,15 +26,21 @@ export default function LoginPage() {
         loading: "Logging in...",
         success: (res) => res.data.message,
         error: (err: any) =>
-          err.response?.data?.error || "Something went wrong!",
+          err.response?.data?.message || "Something went wrong!",
       });
+
+      setIsLocked(false);
 
       setTimeout(() => {
         router.push("/profile");
-      },1500);
-    
+      }, 1500);
+
     } catch (error: any) {
       console.error("Login Failed", error.message);
+      //toast.error(error.response?.data?.message);
+      if (error.response?.data?.locked) {
+        setIsLocked(error.response?.data?.locked ?? false);
+      }
     }
   };
 
@@ -63,8 +65,9 @@ export default function LoginPage() {
             <input
               id="email"
               type="email"
+              autoComplete="email"
               value={user.email}
-              onChange={(e) => setUser({ ...user, email: e.target.value })}
+              onChange={(e) => setUser({ ...user, email: e.target.value.toLowerCase() })}
               placeholder="Enter your email"
               className="w-full rounded-lg border border-zinc-700 bg-zinc-900 px-4 py-3 text-white outline-none transition focus:border-white"
             />
@@ -82,6 +85,7 @@ export default function LoginPage() {
               id="password"
               type="password"
               value={user.password}
+              autoComplete="current-password"
               onChange={(e) => setUser({ ...user, password: e.target.value })}
               placeholder="Enter your password"
               className="w-full rounded-lg border border-zinc-700 bg-zinc-900 px-4 py-3 text-white outline-none transition focus:border-white"
@@ -97,15 +101,32 @@ export default function LoginPage() {
           </button>
         </form>
 
-        <p className="mt-6 text-center text-sm text-zinc-400">
-          Don't have an account?{" "}
-          <Link
-            href="/signup"
-            className="cursor-pointer text-white hover:underline"
-          >
-            Signup
-          </Link>
-        </p>
+        {isLocked && (
+          <div className="rounded-lg border mt-3 border-red-800 bg-red-950/30 p-4 text-center">
+            <p className="text-sm text-red-300">
+              Too many failed attempts. You can reset your password instead.
+            </p>
+
+            <Link
+              href="/forgot-password"
+              className="mt-3 inline-block text-sm font-medium text-blue-400 hover:text-blue-300 underline"
+            >
+              Forgot Password?
+            </Link>
+          </div>
+        )}
+
+        {!isLocked && (
+          <p className="mt-6 text-center text-sm text-zinc-400">
+            Don't have an account?{" "}
+            <Link
+              href="/signup"
+              className="cursor-pointer text-white hover:underline"
+            >
+              Signup
+            </Link>
+          </p>
+        )}
       </div>
     </div>
   );

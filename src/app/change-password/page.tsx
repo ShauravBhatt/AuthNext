@@ -36,6 +36,8 @@ export default function ChangePassword() {
         error.response?.data?.message ||
         "Unable to fetch user details."
       );
+
+      router.push("/login");
     }
   }
 
