@@ -40,7 +40,7 @@ export default function ChangePassword() {
   }
 
   async function handleChangePassword(
-    e: React.FormEvent<HTMLFormElement>
+    e: any
   ) {
     e.preventDefault();
 
