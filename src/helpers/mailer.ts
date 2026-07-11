@@ -1,7 +1,11 @@
 import nodemailer from "nodemailer";
 import Mailgen from "mailgen";
 
-export default async function sendEmail(options) {
+export default async function sendEmail(options : {
+  email: string,
+  subject: string,
+  mailgenContent: Mailgen.Content,
+}) {
   if (options.email.trim().length === 0 || options.subject.trim().length === 0 || !options.mailgenContent) {
     throw new Error("Invalid input for email");
   }
